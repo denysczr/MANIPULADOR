@@ -1,0 +1,1230 @@
+typedef struct {
+   float uT;
+   float iT0;
+   float eT0; 
+   float iT;
+   float eT;
+} PID;
+
+PID PID_M01;
+PID PID_M02;
+PID PID_M03;
+PID PID_M04;
+PID PID_M05;
+PID PID_M06;
+
+int valor;  
+boolean flag_print = false;
+
+float teste;
+float teste2;
+boolean flag_sinal_m05 = true;
+boolean flag_sinal_m04 = true;
+boolean flag_sinal_m06 = true;
+
+//############################MOTOR 01#################################
+int m01_inv = 2;
+float m01_vel = 120.0;
+float m01_pos = 0.0;
+
+int16 SINAL_M01 = 0;
+int SENTIDO_M01 = 7;
+int SENTIDO_DISCO_M01 = 7;
+boolean FLAG_1_M01 = false;
+boolean FLAG_2_M01 = false;
+
+boolean REF_TEMP_M01 = false;
+int CONT_TEMPO_MS_SEM_HASTE_M01 = 0;
+int CONT_TEMPO_MS_COM_HASTE_M01 = 0;
+int TEMPO_MAX_M01 = 111;
+//############################MOTOR 02#################################
+int m02_inv = 2;
+float m02_vel = 120.0;
+float m02_pos = 0.0;
+
+int16 SINAL_M02 = 0;
+int SENTIDO_M02 = 7;
+int SENTIDO_DISCO_M02 = 7;
+boolean FLAG_1_M02 = false;
+boolean FLAG_2_M02 = false;
+
+boolean REF_TEMP_M02 = false;
+int CONT_TEMPO_MS_SEM_HASTE_M02 = 0;
+int CONT_TEMPO_MS_COM_HASTE_M02 = 0;
+int TEMPO_MAX_M02 = 111;
+//############################MOTOR 03#################################
+int m03_inv = 2;
+float m03_vel = 120.0;
+float m03_pos = 0.0;
+
+int16 SINAL_M03 = 0;
+int SENTIDO_M03 = 7;
+int SENTIDO_DISCO_M03 = 7;
+boolean FLAG_1_M03 = false;
+boolean FLAG_2_M03 = false;
+
+boolean REF_TEMP_M03 = false;
+int CONT_TEMPO_MS_SEM_HASTE_M03 = 0;
+int CONT_TEMPO_MS_COM_HASTE_M03 = 0;
+int TEMPO_MAX_M03 = 111;
+//############################MOTOR 04#################################
+int m04_inv = 2;
+float m04_vel = 120.0;
+float m04_pos = 0.0;
+
+int16 SINAL_M04 = 0;
+int SENTIDO_M04 = 7;
+int SENTIDO_DISCO_M04 = 7;
+boolean FLAG_1_M04 = false;
+boolean FLAG_2_M04 = false;
+
+boolean REF_TEMP_M04 = false;
+int CONT_TEMPO_MS_SEM_HASTE_M04 = 0;
+int CONT_TEMPO_MS_COM_HASTE_M04 = 0;
+int TEMPO_MAX_M04 = 111;
+//############################MOTOR 05#################################
+int m05_inv = 2;
+float m05_vel = 120.0;
+float m05_pos = 0.0;
+
+int16 SINAL_M05 = 0;
+int SENTIDO_M05 = 2;
+int SENTIDO_DISCO_M05 = 7;
+boolean FLAG_1_M05 = false;
+boolean FLAG_2_M05 = false;
+
+boolean REF_TEMP_M05 = false;
+int CONT_TEMPO_MS_SEM_HASTE_M05 = 0;
+int CONT_TEMPO_MS_COM_HASTE_M05 = 0;
+int TEMPO_MAX_M05 = 45;
+//############################MOTOR 06#################################
+int m06_inv = 2;
+float m06_vel = 120.0;
+float m06_pos = 0.0;
+
+int16 SINAL_M06 = 0;
+int SENTIDO_M06 = 7;
+int SENTIDO_DISCO_M06 = 7;
+boolean FLAG_1_M06 = false;
+boolean FLAG_2_M06 = false;
+
+boolean REF_TEMP_M06 = false;
+int CONT_TEMPO_MS_SEM_HASTE_M06 = 0;
+int CONT_TEMPO_MS_COM_HASTE_M06 = 0;
+int TEMPO_MAX_M06 = 45;
+//############################FIM MOTORES #################################
+
+unsigned int conta_us = 0;
+unsigned int16 conta_ms = 0;
+
+
+int16 conta_micros_01;
+boolean flag = false;
+
+
+//#################################################################################################################
+//                            ALGORÍTIMO PID COM O MENOR NÚMERO DE VARIAVEIS
+//#################################################################################################################
+
+void PID_M1(){
+//############################  PID MOTOR 1 ######################################### 
+                           PID_M01.eT = TEMPO_MAX_M01 - m01_vel;
+                           PID_M01.iT = (0.07)*(PID_M01.eT) + PID_M01.iT0;
+                           PID_M01.uT = ((0.1)*(PID_M01.eT) + PID_M01.iT + ((0.01)*((PID_M01.eT) - PID_M01.eT0)));
+     
+                           if(PID_M01.uT > 120.0)
+                           { 
+                               PID_M01.uT = 120.0;
+                           }else
+                           {
+                              if(PID_M01.uT < 0.0)
+                              {
+                                  PID_M01.uT = 0.0;
+                              }
+                           }
+                           PID_M01.iT0 = PID_M01.iT;
+                           PID_M01.eT0 = PID_M01.eT;
+                           
+                           
+//############################ FIM PID MOTOR 1 #########################################
+}
+
+
+void PID_M2(){
+//############################  PID MOTOR 2 ######################################### 
+                           PID_M02.eT = TEMPO_MAX_M02 - m02_vel;
+                           PID_M02.iT = (0.07)*(TEMPO_MAX_M02 - m02_vel) + PID_M02.iT0;
+                           PID_M02.uT = ((0.1)*(PID_M02.eT) + PID_M02.iT + ((0.01)*((PID_M02.eT) - PID_M02.eT0)));
+     
+                           if(PID_M02.uT > 120.0)
+                           { 
+                               PID_M02.uT = 120.0;
+                           }else
+                           {
+                              if(PID_M02.uT < 0.0)
+                              {
+                                  PID_M02.uT = 0.0;
+                              }
+                           }
+                           PID_M02.iT0 = PID_M02.iT;
+                           PID_M02.eT0 = PID_M02.eT;
+//############################ FIM PID MOTOR 2 #########################################
+}
+
+
+void PID_M3(){
+//############################  PID MOTOR 3 ######################################### 
+                           PID_M03.eT = TEMPO_MAX_M03 - m03_vel;
+                           PID_M03.iT = (0.07)*(TEMPO_MAX_M03 - m03_vel) + PID_M03.iT0;
+                           PID_M03.uT = ((0.1)*(PID_M03.eT) + PID_M03.iT + ((0.01)*((PID_M03.eT) - PID_M03.eT0)));
+     
+                           if(PID_M03.uT > 120.0)
+                           { 
+                               PID_M03.uT = 120.0;
+                           }else
+                           {
+                              if(PID_M03.uT < 0.0)
+                              {
+                                  PID_M03.uT = 0.0;
+                              }
+                           }
+                           PID_M03.iT0 = PID_M03.iT;
+                           PID_M03.eT0 = PID_M03.eT;
+//############################ FIM PID MOTOR 3 #########################################
+}
+
+void PID_M4(){
+//############################  PID MOTOR 4 ######################################### 
+                           PID_M04.eT = TEMPO_MAX_M04 - m04_vel;
+                           PID_M04.iT = (0.07)*(TEMPO_MAX_M04 - m04_vel) + PID_M04.iT0;
+                           PID_M04.uT = ((0.1)*(PID_M04.eT) + PID_M04.iT + ((0.01)*((PID_M04.eT) - PID_M04.eT0)));
+     
+                           if(PID_M04.uT > 120.0)
+                           { 
+                               PID_M04.uT = 120.0;
+                           }else
+                           {
+                              if(PID_M04.uT < 0.0)
+                              {
+                                  PID_M04.uT = 0.0;
+                              }
+                           }
+                           PID_M04.iT0 = PID_M04.iT;
+                           PID_M04.eT0 = PID_M04.eT;
+//############################ FIM PID MOTOR 4 #########################################
+}
+
+void PID_M5(){
+//############################  PID MOTOR 5 ######################################### 
+                           PID_M05.eT = TEMPO_MAX_M05 - m05_vel;
+                           PID_M05.iT = (0.07)*(TEMPO_MAX_M05 - m05_vel) + PID_M05.iT0;
+                           PID_M05.uT = ((0.1)*(PID_M05.eT) + PID_M05.iT + ((0.01)*((PID_M05.eT) - PID_M05.eT0)));
+     
+                           if(PID_M05.uT > 120.0)
+                           { 
+                               PID_M05.uT = 120.0;
+                           }else
+                           {
+                              if(PID_M05.uT < 0.0)
+                              {
+                                  PID_M05.uT = 0.0;
+                              }
+                           }
+                           PID_M05.iT0 = PID_M05.iT;
+                           PID_M05.eT0 = PID_M05.eT;
+//############################ FIM PID MOTOR 5 #########################################
+}
+
+void PID_M6(){
+//############################  PID MOTOR 6 ######################################### 
+                           PID_M06.eT = TEMPO_MAX_M06 - m06_vel;
+                           PID_M06.iT = (0.07)*(TEMPO_MAX_M06 - m06_vel) + PID_M06.iT0;
+                           PID_M06.uT = ((0.1)*(PID_M06.eT) + PID_M06.iT + ((0.01)*((PID_M06.eT) - PID_M06.eT0)));
+     
+                           if(PID_M06.uT > 120.0)
+                           { 
+                               PID_M06.uT = 120.0;
+                           }else
+                           {
+                              if(PID_M06.uT < 0.0)
+                              {
+                                  PID_M06.uT = 0.0;
+                              }
+                           }
+                           PID_M06.iT0 = PID_M06.iT;
+                           PID_M06.eT0 = PID_M06.eT;
+//############################ FIM PID MOTOR 6 #########################################
+}
+
+void LEITURA_SENSOR_OPTICO_MOTORES(){
+
+//######################################## LEITURA SENSOR OPTICO MOTOR 01 ################################################
+
+if(m01_pos != 0){
+    
+    if(m01_inv == 8){
+
+          if(m01_pos > SINAL_M01){
+              SENTIDO_M01 = 1; 
+              SENTIDO_DISCO_M01 = 1;
+          }else if(m01_pos < SINAL_M01){
+              SENTIDO_M01 = 0;
+              SENTIDO_DISCO_M01 = 0;
+          }else{
+          
+               SENTIDO_M01 = 7; 
+               PID_M01.iT0 = 0.0;
+               PID_M01.eT0 = 0.0;
+               PID_M01.uT  = 0.0;
+      
+          } 
+          
+    }else{
+       SENTIDO_M01 = m01_inv;
+    }
+    
+
+    if(input(pin_b5)){ 
+    
+       if(!REF_TEMP_M01){
+          REF_TEMP_M01 = true;
+          
+          if(CONT_TEMPO_MS_COM_HASTE_M01 > 111){
+              CONT_TEMPO_MS_COM_HASTE_M01 = 111;
+          }
+          
+          CONT_TEMPO_MS_COM_HASTE_M01++;
+       }
+    
+       FLAG_2_M01 = true;
+       if(FLAG_1_M01){
+           FLAG_1_M01 = false;
+           
+             
+              TEMPO_MAX_M01 = CONT_TEMPO_MS_SEM_HASTE_M01;
+              CONT_TEMPO_MS_SEM_HASTE_M01 = 0;
+              
+           
+              if(SENTIDO_DISCO_M01 == 1){
+                   SINAL_M01++;
+              }
+              
+              if(SENTIDO_DISCO_M01 == 0){
+                  SINAL_M01--;
+              }
+
+       }
+   }else{
+       
+       if(!REF_TEMP_M01){
+          REF_TEMP_M01 = true;
+          
+          if(CONT_TEMPO_MS_SEM_HASTE_M01 > 111){
+              CONT_TEMPO_MS_SEM_HASTE_M01 = 111;
+          }
+          
+          CONT_TEMPO_MS_SEM_HASTE_M01++;
+       }
+   
+       FLAG_1_M01 = true;
+       if(FLAG_2_M01){
+           FLAG_2_M01 = false;
+           
+            
+              TEMPO_MAX_M01 = CONT_TEMPO_MS_COM_HASTE_M01;
+              CONT_TEMPO_MS_COM_HASTE_M01 = 0;
+           
+              if(SENTIDO_DISCO_M01 == 1){
+                   SINAL_M01++;
+              }
+              
+              if(SENTIDO_DISCO_M01 == 0){
+                  SINAL_M01--;
+              }
+
+           
+       } 
+   }
+   
+
+
+}
+
+//######################################## FIM LEITURA SENSOR ÓPTICO ################################################
+
+//######################################## LEITURA SENSOR OPTICO MOTOR 02 ################################################
+
+if(m02_pos != 0){
+    
+    if(m02_inv == 8){
+    
+          if(m02_pos > SINAL_M02){
+              SENTIDO_M02 = 1; 
+              SENTIDO_DISCO_M02 = 1;
+          }else if(m02_pos < SINAL_M02){
+              SENTIDO_M02 = 0;
+              SENTIDO_DISCO_M02 = 0;
+          }else{
+          
+               SENTIDO_M02 = 7; 
+               PID_M02.iT0 = 0.0;
+               PID_M02.eT0 = 0.0;
+               PID_M02.uT  = 0.0;
+              
+          } 
+          
+    }else{
+       SENTIDO_M02 = m02_inv;
+    }
+    
+
+    if(input(pin_b1)){ 
+    
+       if(!REF_TEMP_M02){
+          REF_TEMP_M02 = true;
+          
+          if(CONT_TEMPO_MS_COM_HASTE_M02 > 111){
+              CONT_TEMPO_MS_COM_HASTE_M02 = 111;
+          }
+          
+          CONT_TEMPO_MS_COM_HASTE_M02++;
+       }
+    
+       FLAG_2_M02 = true;
+       if(FLAG_1_M02){
+           FLAG_1_M02 = false;
+           
+           
+              TEMPO_MAX_M02 = CONT_TEMPO_MS_SEM_HASTE_M02;
+              CONT_TEMPO_MS_SEM_HASTE_M02 = 0;
+              
+           
+              if(SENTIDO_DISCO_M02 == 1){
+                   SINAL_M02++;
+              }
+              
+              if(SENTIDO_DISCO_M02 == 0){
+                  SINAL_M02--;
+              }
+
+       }
+   }else{
+       
+       if(!REF_TEMP_M02){
+          REF_TEMP_M02 = true;
+          
+          if(CONT_TEMPO_MS_SEM_HASTE_M02 > 111){
+              CONT_TEMPO_MS_SEM_HASTE_M02 = 111;
+          }
+          
+          CONT_TEMPO_MS_SEM_HASTE_M02++;
+       }
+   
+       FLAG_1_M02 = true;
+       if(FLAG_2_M02){
+           FLAG_2_M02 = false;
+           
+              TEMPO_MAX_M02 = CONT_TEMPO_MS_COM_HASTE_M02;
+              CONT_TEMPO_MS_COM_HASTE_M02 = 0;
+           
+              if(SENTIDO_DISCO_M02 == 1){
+                   SINAL_M02++;
+              }
+              
+              if(SENTIDO_DISCO_M02 == 0){
+                  SINAL_M02--;
+              }
+             
+
+       } 
+   }
+   
+
+
+}
+
+//######################################## FIM LEITURA SENSOR ÓPTICO ################################################
+
+//######################################## LEITURA SENSOR OPTICO MOTOR 03 ################################################
+
+if(m03_pos != 0){
+
+    if(m03_inv == 8){
+
+          if(m03_pos > SINAL_M03){
+              SENTIDO_M03 = 1; 
+              SENTIDO_DISCO_M03 = 1;
+          }else if(m03_pos < SINAL_M03){
+              SENTIDO_M03 = 0;
+              SENTIDO_DISCO_M03 = 0;
+          }else{
+              SENTIDO_M03 = 7; 
+              
+               PID_M03.iT0 = 0.0;
+               PID_M03.eT0 = 0.0;
+               PID_M03.uT  = 0.0;
+              
+          } 
+          
+    }else{
+       SENTIDO_M03 = m03_inv;
+    }
+    
+
+    if(input(pin_d4)){ 
+    
+       if(!REF_TEMP_M03){
+          REF_TEMP_M03 = true;
+          
+          if(CONT_TEMPO_MS_COM_HASTE_M03 > 111){
+              CONT_TEMPO_MS_COM_HASTE_M03 = 111;
+          }
+          
+          CONT_TEMPO_MS_COM_HASTE_M03++;
+       }
+    
+       FLAG_2_M03 = true;
+       if(FLAG_1_M03){
+           FLAG_1_M03 = false;
+           
+           
+              TEMPO_MAX_M03 = CONT_TEMPO_MS_SEM_HASTE_M03;
+              CONT_TEMPO_MS_SEM_HASTE_M03 = 0;
+              
+           
+              if(SENTIDO_DISCO_M03 == 1){
+                   SINAL_M03++;
+              }
+              
+              if(SENTIDO_DISCO_M03 == 0){
+                  SINAL_M03--;
+              }
+             
+
+       }
+   }else{
+       
+       if(!REF_TEMP_M03){
+          REF_TEMP_M03 = true;
+          
+          if(CONT_TEMPO_MS_SEM_HASTE_M03 > 111){
+              CONT_TEMPO_MS_SEM_HASTE_M03 = 111;
+          }
+          
+          CONT_TEMPO_MS_SEM_HASTE_M03++;
+       }
+   
+       FLAG_1_M03 = true;
+       if(FLAG_2_M03){
+           FLAG_2_M03 = false;
+           
+              TEMPO_MAX_M03 = CONT_TEMPO_MS_COM_HASTE_M03;
+              CONT_TEMPO_MS_COM_HASTE_M03 = 0;
+           
+              if(SENTIDO_DISCO_M03 == 1){
+                   SINAL_M03++;
+              }
+              
+              if(SENTIDO_DISCO_M03 == 0){
+                  SINAL_M03--;
+              }
+
+           
+       } 
+   }
+   
+
+
+}
+
+//######################################## FIM LEITURA SENSOR ÓPTICO ################################################
+
+
+//######################################## LEITURA SENSOR OPTICO MOTOR 04 ################################################
+
+if(m04_pos != 0){
+
+    if(m04_inv == 8){
+    
+          if(m04_pos > SINAL_M04){
+              if(flag_sinal_m06){
+                SENTIDO_M04 = 1; 
+                SENTIDO_DISCO_M04 = 1;
+              }
+          }else if(m04_pos < SINAL_M04){
+              if(flag_sinal_m06){
+                SENTIDO_M04 = 0;
+                SENTIDO_DISCO_M04 = 0;
+              }
+          }else{
+              SENTIDO_M04 = 7; 
+              
+               flag_sinal_m06 = false;
+               PID_M04.iT0 = 0.0;
+               PID_M04.eT0 = 0.0;
+               PID_M04.uT  = 0.0;
+      
+          } 
+          
+    }else{
+       SENTIDO_M04 = m04_inv;
+    }
+
+    
+    if(input(pin_d2)){ 
+    
+       if(!REF_TEMP_M04){
+          REF_TEMP_M04 = true;
+          
+          if(CONT_TEMPO_MS_COM_HASTE_M04 > 111){
+              CONT_TEMPO_MS_COM_HASTE_M04 = 111;
+          }
+          
+          CONT_TEMPO_MS_COM_HASTE_M04++;
+       }
+    
+       FLAG_2_M04 = true;
+       if(FLAG_1_M04){
+           FLAG_1_M04 = false;
+           
+           
+              TEMPO_MAX_M04 = CONT_TEMPO_MS_SEM_HASTE_M04;
+              CONT_TEMPO_MS_SEM_HASTE_M04 = 0;
+              
+           
+              if(SENTIDO_DISCO_M04 == 1){
+                   SINAL_M04++;
+              }
+              
+              if(SENTIDO_DISCO_M04 == 0){
+                  SINAL_M04--;
+              }
+             
+
+
+       }
+   }else{
+       
+       if(!REF_TEMP_M04){
+          REF_TEMP_M04 = true;
+          
+          if(CONT_TEMPO_MS_SEM_HASTE_M04 > 111){
+              CONT_TEMPO_MS_SEM_HASTE_M04 = 111;
+          }
+          
+          CONT_TEMPO_MS_SEM_HASTE_M04++;
+       }
+   
+       FLAG_1_M04 = true;
+       if(FLAG_2_M04){
+           FLAG_2_M04 = false;
+           
+              TEMPO_MAX_M04 = CONT_TEMPO_MS_COM_HASTE_M04;
+              CONT_TEMPO_MS_COM_HASTE_M04 = 0;
+           
+              if(SENTIDO_DISCO_M04 == 1){
+                   SINAL_M04++;
+              }
+              
+              if(SENTIDO_DISCO_M04 == 0){
+                  SINAL_M04--;
+              }
+             
+
+           
+       } 
+   }
+   
+
+
+}
+
+//######################################## FIM LEITURA SENSOR ÓPTICO ################################################
+
+//######################################## LEITURA SENSOR OPTICO MOTOR 05 ################################################
+
+if(m05_pos != 0){
+
+    if(m05_inv == 8){
+      
+             if(m05_pos > SINAL_M05){
+                 if(flag_sinal_m05){
+                     SENTIDO_M05 = 1;
+                     SENTIDO_DISCO_M05 = 1;
+                 }
+             }else if(m05_pos < SINAL_M05){
+                 if(flag_sinal_m05){
+                     SENTIDO_M05 = 0;
+                     SENTIDO_DISCO_M05 = 0;
+                 }
+             }else{
+                  flag_sinal_m05 = false;
+                  SENTIDO_M05 = 7;
+                  PID_M05.iT0 = 0.0;
+                  PID_M05.eT0 = 0.0;
+                  PID_M05.uT  = 0.0;
+                 
+             }
+               
+    }else{
+       SENTIDO_M05 = m05_inv;
+    }
+
+
+    if(input(pin_c2)){ 
+    
+       if(!REF_TEMP_M05){
+          REF_TEMP_M05 = true;
+          
+          if(CONT_TEMPO_MS_COM_HASTE_M05 > 91){
+              CONT_TEMPO_MS_COM_HASTE_M05 = 91;
+          }
+          
+          CONT_TEMPO_MS_COM_HASTE_M05++;
+       }
+    
+       FLAG_2_M05 = true;
+       if(FLAG_1_M05){
+           FLAG_1_M05 = false;
+           
+           
+              TEMPO_MAX_M05 = CONT_TEMPO_MS_SEM_HASTE_M05;
+              CONT_TEMPO_MS_SEM_HASTE_M05 = 0;
+              
+           
+              if(SENTIDO_DISCO_M05 == 1){
+                   SINAL_M05++;
+              }
+              
+              if(SENTIDO_DISCO_M05 == 0){
+                  SINAL_M05--;
+              }
+             
+
+
+       }
+   }else{
+       
+       if(!REF_TEMP_M05){
+          REF_TEMP_M05 = true;
+          
+          if(CONT_TEMPO_MS_SEM_HASTE_M05 > 91){
+              CONT_TEMPO_MS_SEM_HASTE_M05 = 91;
+          }
+          
+          CONT_TEMPO_MS_SEM_HASTE_M05++;
+       }
+   
+       FLAG_1_M05 = true;
+       if(FLAG_2_M05){
+           FLAG_2_M05 = false;
+           
+              TEMPO_MAX_M05 = CONT_TEMPO_MS_COM_HASTE_M05;
+              CONT_TEMPO_MS_COM_HASTE_M05 = 0;
+           
+              if(SENTIDO_DISCO_M05 == 1){
+                   SINAL_M05++;
+              }
+              
+              if(SENTIDO_DISCO_M05 == 0){
+                  SINAL_M05--;
+              }
+             
+
+       } 
+   }
+   
+
+
+}
+
+//######################################## FIM LEITURA SENSOR ÓPTICO ################################################
+
+//######################################## LEITURA SENSOR OPTICO MOTOR 06 ################################################
+
+if(m06_pos != 0){
+
+    if(m06_inv == 8){
+
+          if(m06_pos > SINAL_M06){
+              if(flag_sinal_m06){
+                 SENTIDO_M06 = 1; 
+                 SENTIDO_DISCO_M06 = 1;
+              }
+          }else if(m06_pos < SINAL_M06){
+              if(flag_sinal_m06){
+                SENTIDO_M06 = 0;
+                SENTIDO_DISCO_M06 = 0;
+              }
+          }else{
+              SENTIDO_M06 = 7; 
+               flag_sinal_m06 = false;
+               PID_M06.iT0 = 0.0;
+               PID_M06.eT0 = 0.0;
+               PID_M06.uT  = 0.0;
+               
+              
+          } 
+          
+    }else{
+       SENTIDO_M06 = m06_inv;
+    }
+
+    
+    if(input(pin_e1)){ 
+    
+       if(!REF_TEMP_M06){
+          REF_TEMP_M06 = true;
+          
+          if(CONT_TEMPO_MS_COM_HASTE_M06 > 91){
+              CONT_TEMPO_MS_COM_HASTE_M06 = 91;
+          }
+          
+          CONT_TEMPO_MS_COM_HASTE_M06++;
+       }
+    
+       FLAG_2_M06 = true;
+       if(FLAG_1_M06){
+           FLAG_1_M06 = false;
+           
+           
+              TEMPO_MAX_M06 = CONT_TEMPO_MS_SEM_HASTE_M06;
+              CONT_TEMPO_MS_SEM_HASTE_M06 = 0;
+              
+           
+              if(SENTIDO_DISCO_M06 == 1){
+                   SINAL_M06++;
+              }
+              
+              if(SENTIDO_DISCO_M06 == 0){
+                  SINAL_M06--;
+              }
+
+
+       }
+   }else{
+       
+       if(!REF_TEMP_M06){
+          REF_TEMP_M06 = true;
+          
+          if(CONT_TEMPO_MS_SEM_HASTE_M06 > 91){
+              CONT_TEMPO_MS_SEM_HASTE_M06 = 91;
+          }
+          
+          CONT_TEMPO_MS_SEM_HASTE_M06++;
+       }
+   
+       FLAG_1_M06 = true;
+       if(FLAG_2_M06){
+           FLAG_2_M06 = false;
+           
+              TEMPO_MAX_M06 = CONT_TEMPO_MS_COM_HASTE_M06;
+              CONT_TEMPO_MS_COM_HASTE_M06 = 0;
+           
+              if(SENTIDO_DISCO_M06 == 1){
+                   SINAL_M06++;
+              }
+              
+              if(SENTIDO_DISCO_M06 == 0){
+                  SINAL_M06--;
+              }
+
+           
+       } 
+   }
+   
+
+
+}
+
+//######################################## FIM LEITURA SENSOR ÓPTICO ################################################
+
+
+
+}
+
+
+void PROTOCOLO_MOTORES(){
+
+//######################################## PROTOCOLO MOTOR 01 ################################################
+       
+       AUX_CONVERSAO = "";
+       
+       m01_inv = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[1];
+       AUX_CONVERSAO[1] = '\0';
+       m01_inv = atoi(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+       
+       m01_vel = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[2];
+       AUX_CONVERSAO[1] = BufferRX[3];
+       AUX_CONVERSAO[2] = BufferRX[4];
+       AUX_CONVERSAO[3] = '\0';
+       m01_vel = atof(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+       
+       m01_pos = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[5];
+       AUX_CONVERSAO[1] = BufferRX[6];
+       AUX_CONVERSAO[2] = BufferRX[7];
+       AUX_CONVERSAO[3] = BufferRX[8];
+       AUX_CONVERSAO[4] = '\0';
+       m01_pos = atof(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+      
+       //######################################## FIM PROTOCOLO MOTOR 01 ################################################
+
+       //######################################## PROTOCOLO MOTOR 02 ################################################
+       
+       
+       AUX_CONVERSAO = "";
+       
+       m02_inv = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[9];
+       AUX_CONVERSAO[1] = '\0';
+       m02_inv = atoi(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+       
+       m02_vel = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[10];
+       AUX_CONVERSAO[1] = BufferRX[11];
+       AUX_CONVERSAO[2] = BufferRX[12];
+       AUX_CONVERSAO[3] = '\0';
+       m02_vel = atof(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+       
+       m02_pos = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[13];
+       AUX_CONVERSAO[1] = BufferRX[14];
+       AUX_CONVERSAO[2] = BufferRX[15];
+       AUX_CONVERSAO[3] = BufferRX[16];
+       AUX_CONVERSAO[4] = '\0';
+       m02_pos = atof(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+      
+       //######################################## FIM PROTOCOLO MOTOR 02 ################################################
+       
+       //######################################## PROTOCOLO MOTOR 03 ################################################
+       
+       
+       AUX_CONVERSAO = "";
+       
+       m03_inv = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[17];
+       AUX_CONVERSAO[1] = '\0';
+       m03_inv = atoi(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+       
+       m03_vel = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[18];
+       AUX_CONVERSAO[1] = BufferRX[19];
+       AUX_CONVERSAO[2] = BufferRX[20];
+       AUX_CONVERSAO[3] = '\0';
+       m03_vel = atof(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+       
+       m03_pos = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[21];
+       AUX_CONVERSAO[1] = BufferRX[22];
+       AUX_CONVERSAO[2] = BufferRX[23];
+       AUX_CONVERSAO[3] = BufferRX[24];
+       AUX_CONVERSAO[4] = '\0';
+       m03_pos = atof(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+      
+       //######################################## FIM PROTOCOLO MOTOR 03 ################################################
+       
+       //######################################## PROTOCOLO MOTOR 04 ################################################
+       
+       
+       AUX_CONVERSAO = "";
+       
+       m04_inv = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[25];
+       AUX_CONVERSAO[1] = '\0';
+       m04_inv = atoi(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+       
+       m04_vel = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[26];
+       AUX_CONVERSAO[1] = BufferRX[27];
+       AUX_CONVERSAO[2] = BufferRX[28];
+       AUX_CONVERSAO[3] = '\0';
+       m04_vel = atof(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+       
+       m04_pos = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[29];
+       AUX_CONVERSAO[1] = BufferRX[30];
+       AUX_CONVERSAO[2] = BufferRX[31];
+       AUX_CONVERSAO[3] = BufferRX[32];
+       AUX_CONVERSAO[4] = '\0';
+       m04_pos = atof(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+      
+       //######################################## FIM PROTOCOLO MOTOR 04 ################################################
+       
+       //######################################## PROTOCOLO MOTOR 05 ################################################
+       
+       
+       AUX_CONVERSAO = "";
+       
+       m05_inv = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[33];
+       AUX_CONVERSAO[1] = '\0';
+       m05_inv = atoi(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+       
+       m05_vel = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[34];
+       AUX_CONVERSAO[1] = BufferRX[35];
+       AUX_CONVERSAO[2] = BufferRX[36];
+       AUX_CONVERSAO[3] = '\0';
+       m05_vel = atof(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+       
+       m05_pos = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[37];
+       AUX_CONVERSAO[1] = BufferRX[38];
+       AUX_CONVERSAO[2] = BufferRX[39];
+       AUX_CONVERSAO[3] = BufferRX[40];
+       AUX_CONVERSAO[4] = '\0';
+       m05_pos = atof(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+      
+       //######################################## FIM PROTOCOLO MOTOR 05 ################################################
+       
+       //######################################## PROTOCOLO MOTOR 06 ################################################
+       
+       
+       AUX_CONVERSAO = "";
+       
+       m06_inv = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[41];
+       AUX_CONVERSAO[1] = '\0';
+       m06_inv = atoi(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+       
+       m06_vel = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[42];
+       AUX_CONVERSAO[1] = BufferRX[43];
+       AUX_CONVERSAO[2] = BufferRX[44];
+       AUX_CONVERSAO[3] = '\0';
+       m06_vel = atof(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+       
+       m06_pos = 0;
+       
+       AUX_CONVERSAO[0] = BufferRX[45];
+       AUX_CONVERSAO[1] = BufferRX[46];
+       AUX_CONVERSAO[2] = BufferRX[47];
+       AUX_CONVERSAO[3] = BufferRX[48];
+       AUX_CONVERSAO[4] = '\0';
+       m06_pos = atof(AUX_CONVERSAO);
+       AUX_CONVERSAO = "";
+      
+       //######################################## FIM PROTOCOLO MOTOR 06 ################################################
+
+}
+
+
+void CONTROLE_POTENCIA_MOTORES(){
+//############################### MOTOR 01 #####################################  
+  
+   if(conta_micros_01 <= (120 - PID_M01.uT))
+   {
+         output_low(pin_b7);
+         output_low(pin_b6);
+   }else
+   {
+         if(SENTIDO_M01 == 0)
+         {
+               output_high(pin_b7);
+               output_low(pin_b6);
+
+         }else if(SENTIDO_M01 == 1)
+         {
+               output_low(pin_b7);
+               output_high(pin_b6);
+               
+         }else{
+         
+              output_low(pin_b7);
+              output_low(pin_b6);
+         }
+         
+         
+   }
+ 
+//############################### FIM MOTOR 01 #####################################  
+  
+ 
+  
+//############################### MOTOR 02 #####################################  
+  
+   if(conta_micros_01 <= (120 - PID_M02.uT))
+   {
+         output_low(pin_b3);
+         output_low(pin_b2);
+   }else
+   {
+         if(SENTIDO_M02 == 0)
+         {
+               output_high(pin_b3);
+               output_low(pin_b2);
+
+         }else if(SENTIDO_M02 == 1)
+         {
+               output_low(pin_b3);
+               output_high(pin_b2);
+               
+         }else{
+         
+              output_low(pin_b3);
+              output_low(pin_b2);
+         }
+       
+   }
+ 
+//############################### FIM MOTOR 02 #####################################  
+
+//############################### MOTOR 03 #####################################  
+  
+   if(conta_micros_01 <= (120 - PID_M03.uT))
+   {
+         output_low(pin_d6);
+         output_low(pin_d5);
+   }else
+   {
+         if(SENTIDO_M03 == 0)
+         {
+               output_high(pin_d6);
+               output_low(pin_d5);
+
+         }else if(SENTIDO_M03 == 1)
+         {
+               output_low(pin_d6);
+               output_high(pin_d5);
+               
+         }else{
+         
+              output_low(pin_d6);
+              output_low(pin_d5);
+         }
+         
+         
+   }
+ 
+//############################### FIM MOTOR 03 #####################################  
+
+//############################### MOTOR 04 #####################################  
+  
+   if(conta_micros_01 <= (120 - PID_M04.uT))
+   {
+
+         output_low(pin_c4);
+         output_low(pin_d3);
+   }else
+   {
+         if(SENTIDO_M04 == 0)
+         {
+               output_high(pin_c4);
+               output_low(pin_d3);
+
+         }else if(SENTIDO_M04 == 1)
+         {
+               output_low(pin_c4);
+               output_high(pin_d3);
+               
+         }else{
+         
+              output_low(pin_c4);
+              output_low(pin_d3);
+         }
+         
+         
+   }
+ 
+//############################### FIM MOTOR 04 #####################################  
+
+//############################### MOTOR 05 #####################################  
+  
+   
+   
+  
+  
+   if(conta_micros_01 <= (120 - PID_M05.uT))
+   {
+         output_low(pin_d0);
+         output_low(pin_c3);
+   }else
+   {
+         if(SENTIDO_M05 == 0)
+         {
+               output_high(pin_d0);
+               output_low(pin_c3);
+
+         }else if(SENTIDO_M05 == 1)
+         {
+               output_low(pin_d0);
+               output_high(pin_c3);
+               
+         }else{
+         
+              output_low(pin_d0);
+              output_low(pin_c3);
+         }
+         
+         
+   }
+ 
+//############################### FIM MOTOR 05 #####################################  
+
+//############################### MOTOR 06 #####################################  
+  
+   if(conta_micros_01 <= (120 - PID_M06.uT))
+   {
+         output_low(pin_c0);
+         output_low(pin_e2);
+   }else
+   {
+         if(SENTIDO_M06 == 0)
+         {
+               output_high(pin_c0);
+               output_low(pin_e2);
+
+         }else if(SENTIDO_M06 == 1)
+         {
+               
+               output_low(pin_c0);
+               output_high(pin_e2);
+               
+         }else{
+         
+              output_low(pin_c0);
+              output_low(pin_e2);
+         }
+         
+         
+   }
+ 
+//############################### FIM MOTOR 06 #####################################  
+}
