@@ -1,0 +1,202 @@
+#include <16F877.h> 
+#device ADC=16
+#include <stdlib.h>
+#use delay(clock=20000000)
+#fuses HS,NOWDT,PUT,NOLVP,BROWNOUT,NOLVP,NOCPD
+#use   rs232(BAUD=9600, parity=N, BITS=8, XMIT=pin_c6, RCV=pin_c7) 
+
+#define MAX_BUFFER 60 
+char BufferRX[MAX_BUFFER+1]; 
+boolean CHEGOU_COMANDO = false; 
+char AUX_CONVERSAO[10] = "";
+#include <FUNCOES.h>
+
+//############################################################################### 
+//INTERRUPÇÃO DE RECEBIMENTO DE CARACTERES 
+//###############################################################################
+#int_rda 
+void RECEBE_CAR() 
+{ 
+   static unsigned char ch; 
+   static int IndexBuf=0; 
+
+   ch = getc(); 
+   BufferRX[IndexBuf] = ch; 
+   if( BufferRX[IndexBuf] == '*' ) 
+   { 
+       BufferRX[IndexBuf+1] = '\0';  
+       IndexBuf = 0; 
+       CHEGOU_COMANDO = true; 
+   }else{ 
+       IndexBuf++; 
+   } 
+   
+   if( (BufferRX[0] != '>' ) || (IndexBuf >= MAX_BUFFER) ) 
+   { 
+       IndexBuf = 0; 
+   } 
+} 
+
+//############################################################################### 
+//CONFIGURAÇÃO DO TIMER 
+//###############################################################################
+#INT_TIMER0
+void  TIMER0_isr(void) 
+{
+//############################ COONTA MILISEGUNDOS #########################################
+    conta_us++;
+    if(conta_us == 20){// 51,2usx20=>1024us=>1,024ms
+          conta_us = 0;
+          conta_ms++;
+          if(REF_TEMP_M01){
+              REF_TEMP_M01 = false;
+          }
+          if(REF_TEMP_M02){
+              REF_TEMP_M02 = false;
+          }
+          if(REF_TEMP_M03){
+              REF_TEMP_M03 = false;
+          }
+          if(REF_TEMP_M04){
+              REF_TEMP_M04 = false;
+          }
+          if(REF_TEMP_M05){
+              REF_TEMP_M05 = false;
+          }
+          if(REF_TEMP_M06){
+              REF_TEMP_M06 = false;
+          }
+          if(conta_ms == 100){
+               conta_ms = 0;
+          }  
+      }
+//############################ FIM COONTA MILISEGUNDOS ######################################### 
+
+//############################ SINCRONIZANDO MICROCONTROLADOR COM A REDE ELÉTRICA #########################################   
+   if(input(pin_b0)){
+       flag = false;
+   }else{
+       flag = true;
+   }
+
+   if(flag)
+   {
+       conta_micros_01++;
+   }else{
+       conta_micros_01 = 0;
+   }
+//############################ FIM SINCRONISMO MICROCONTROLADOR COM A REDE ELÉTRICA #########################################   
+}
+
+
+
+void main(void)
+{ 
+  
+  
+   PID_M01.iT0 = 0.0;
+   PID_M01.eT0 = 0.0;
+   
+   PID_M02.iT0 = 0.0;
+   PID_M02.eT0 = 0.0;
+   
+   PID_M03.iT0 = 0.0;
+   PID_M03.eT0 = 0.0;
+   
+   PID_M04.iT0 = 0.0;
+   PID_M04.eT0 = 0.0;
+   
+   PID_M05.iT0 = 0.0;
+   PID_M05.eT0 = 0.0;
+   
+   PID_M06.iT0 = 0.0;
+   PID_M06.eT0 = 0.0;
+   
+   delay_ms(500);
+   printf("%s","INICIALIZANDO PIC!");
+   
+   enable_interrupts(int_rda); //Habilita interrupção de recebimento. 
+   setup_timer_0(RTCC_INTERNAL|RTCC_DIV_1|RTCC_8_bit);//51,2 us overflow
+   enable_interrupts(INT_TIMER0);
+   enable_interrupts(GLOBAL);
+   
+   while( true )  
+   { 
+      if(flag){
+         if(flag_print){
+             flag_print = false;
+             valor++;
+             if((valor > 7)){
+                 valor = 0;
+                 if(m01_pos != 0){
+                     PID_M1();
+                 }
+                 if(m02_pos != 0){
+                     PID_M2();
+                 }
+                 if(m03_pos != 0){
+                     PID_M3();
+                 }
+                 if(m04_pos != 0){
+                     PID_M4();
+                 }
+                 if(m05_pos != 0){
+                     PID_M5();
+                 }
+                 if(m06_pos != 0){
+                     PID_M6();
+                 }
+                 
+//###################################################################################################################################################################### 
+//                                                             ENVIO DE DADOS PARA GERAR GRAFICOS PID 
+//######################################################################################################################################################################
+                 printf("@%f;%f;%f;%f;%f;%f;%d&", PID_M01.uT, (0.1)*(PID_M01.eT), PID_M01.iT, ((0.01)*((PID_M01.eT) - PID_M01.eT0)), PID_M01.eT, m01_vel, TEMPO_MAX_M01);
+
+             }
+
+         }
+
+      }else{
+          flag_print = true;
+      }
+
+
+      if(CHEGOU_COMANDO == true) 
+      { 
+         CHEGOU_COMANDO = false; 
+         PROTOCOLO_MOTORES();
+         
+         PID_M01.iT0 = 0.0;
+         PID_M01.eT0 = 0.0;
+         PID_M01.uT  = 0.0;
+         
+         PID_M02.iT0 = 0.0;
+         PID_M02.eT0 = 0.0;
+         PID_M02.uT  = 0.0;
+         
+         PID_M03.iT0 = 0.0;
+         PID_M03.eT0 = 0.0;
+         PID_M03.uT  = 0.0;
+         
+         PID_M04.iT0 = 0.0;
+         PID_M04.eT0 = 0.0;
+         PID_M04.uT  = 0.0;
+         flag_sinal_m04 = true;
+         
+         PID_M05.iT0 = 0.0;
+         PID_M05.eT0 = 0.0;
+         PID_M05.uT  = 0.0;
+         flag_sinal_m05 = true;
+         
+         PID_M06.iT0 = 0.0;
+         PID_M06.eT0 = 0.0;
+         PID_M06.uT  = 0.0;
+         flag_sinal_m06 = true;
+
+      }
+         
+      LEITURA_SENSOR_OPTICO_MOTORES();
+      CONTROLE_POTENCIA_MOTORES();
+   }
+
+}
