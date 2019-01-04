@@ -1,0 +1,1220 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.IO.Ports;
+using System.Configuration;
+
+namespace ControleReceptor
+{
+    public partial class Form1 : Form
+    {
+        //INICIALIZAÇÃO DE VARIAVEIS GLOBAIS
+        string RxString = string.Empty;
+        string PROTOCOLO = string.Empty;
+        int count = 0;
+
+        public Form1()
+        {
+
+            InitializeComponent();
+            //CONFIGURAÇÃO DA PORTA DE COMUNICAÇÃO
+            porta.PortName = System.Configuration.ConfigurationManager.AppSettings["PortName"];
+            porta.BaudRate = int.Parse(System.Configuration.ConfigurationManager.AppSettings["BaudRate"]);
+            porta.Parity   = Parity.None;
+            porta.DataBits = 8;
+            porta.StopBits = StopBits.One;
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            //LOGICA DE VALIDAÇÃO DA PORTA SERIAL
+            if (!porta.IsOpen)
+            {
+                try
+                {
+                    porta.Open();
+                }
+                catch (Exception)
+                {
+                    rtb_log_recebimento.AppendText("Porta Não localizada");
+                }
+            }
+            else
+            {
+                porta.Close();
+            }
+        }
+
+        private void valida_dados_serial(string dados)
+        {
+            //VALIDAÇÃO DE DADOS RECEBIDOS E GERAÇÃO DE GRAFICOS
+            string[] parts = dados.Split(new string[] { "@" }, StringSplitOptions.None);
+            if (parts.Length == 2)
+            {
+                string[] parts2 = parts[1].Split(new string[] { "&" }, StringSplitOptions.None);
+                if (parts2.Length == 2)
+                {
+
+                    char[] delimitador = { ';' };
+                    string[] VETOR_DADOS = parts2[0].ToString().Split(delimitador);
+
+                    GRAFICO_M05.Series["PID"].Points.AddY(VETOR_DADOS[0]);
+                    GRAFICO_M05.Series["PROPORCIONAL"].Points.AddY(VETOR_DADOS[1]);
+                    GRAFICO_M05.Series["INTEGRATIVO"].Points.AddY(VETOR_DADOS[2]);
+                    GRAFICO_M05.Series["DERIVATIVO"].Points.AddY(VETOR_DADOS[3]);
+                    GRAFICO_M05.Series["ERRO"].Points.AddY(VETOR_DADOS[4]);
+                    GRAFICO_M05.Series["SETPOINT"].Points.AddY(VETOR_DADOS[5]);
+                    GRAFICO_M05.Series["SAIDA"].Points.AddY(VETOR_DADOS[6]);
+
+                    TB_M05_PID.Text = VETOR_DADOS[0];
+                    TB_M05_PROPORCIONAL.Text = VETOR_DADOS[1];
+                    TB_M05_INTEGRAL.Text = VETOR_DADOS[2];
+                    TB_M05_DERIVATIVO.Text = VETOR_DADOS[3];
+                    TB_M05_ERRO.Text = VETOR_DADOS[4];
+                    TB_M05_SETPOINT.Text = VETOR_DADOS[5];
+                    TB_M05_SAIDA.Text = VETOR_DADOS[6];
+                    GRAFICO_M05.Update();
+          
+                }
+
+            }
+
+            rtb_log_recebimento.AppendText(dados + "\n");
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            porta.WriteLine(rtb_envia_dados.Text);
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+
+            //###################################### PIC 01 #############################################
+
+            //######################### MOTOR 01 #################################
+            string pic_01_m01_vel_str = "";
+            int pic_01_m01_vel = Convert.ToInt16(tb_pic_01_m01_vel.Text);
+            pic_01_m01_vel_str = pic_01_m01_vel.ToString();
+            if (pic_01_m01_vel < 100 && pic_01_m01_vel > 9)
+            {
+                pic_01_m01_vel_str = "0" + pic_01_m01_vel.ToString();
+            }
+            if (pic_01_m01_vel < 10)
+            {
+                pic_01_m01_vel_str = "00" + pic_01_m01_vel.ToString();
+            }
+
+            string pic_01_m01_pos_str = "";
+            int pic_01_m01_pos = Convert.ToInt16(tb_pic_01_m01_pos.Text);
+            pic_01_m01_pos_str = pic_01_m01_pos.ToString();
+            if (pic_01_m01_pos < 1000 && pic_01_m01_pos > 100)
+            {
+                pic_01_m01_pos_str = "0" + pic_01_m01_pos.ToString();
+            }
+
+            if (pic_01_m01_pos < 100 && pic_01_m01_pos > 9)
+            {
+                pic_01_m01_pos_str = "00" + pic_01_m01_pos.ToString();
+            }
+
+            if (pic_01_m01_pos < 10)
+            {
+                pic_01_m01_pos_str = "000" + pic_01_m01_pos.ToString();
+            }
+  
+            //######################### MOTOR 02 #################################
+            string pic_01_m02_vel_str = "";
+            int pic_01_m02_vel = Convert.ToInt16(tb_pic_01_m02_vel.Text);
+            pic_01_m02_vel_str = pic_01_m02_vel.ToString();
+            if (pic_01_m02_vel < 100 && pic_01_m02_vel > 9)
+            {
+                pic_01_m02_vel_str = "0" + pic_01_m02_vel.ToString();
+            }
+            if (pic_01_m02_vel < 10)
+            {
+                pic_01_m02_vel_str = "00" + pic_01_m02_vel.ToString();
+            }
+
+            string pic_01_m02_pos_str = "";
+            int pic_01_m02_pos = Convert.ToInt16(tb_pic_01_m02_pos.Text);
+            pic_01_m02_pos_str = pic_01_m02_pos.ToString();
+            if (pic_01_m02_pos < 1000 && pic_01_m02_pos > 100)
+            {
+                pic_01_m02_pos_str = "0" + pic_01_m02_pos.ToString();
+            }
+
+            if (pic_01_m02_pos < 100 && pic_01_m02_pos > 9)
+            {
+                pic_01_m02_pos_str = "00" + pic_01_m02_pos.ToString();
+            }
+
+            if (pic_01_m02_pos < 10)
+            {
+                pic_01_m02_pos_str = "000" + pic_01_m02_pos.ToString();
+            }
+
+            //###################################### FIM PIC 01 #############################################
+
+
+
+            //###################################### PIC 02 #############################################
+
+            //######################### MOTOR 01 #################################
+            string pic_02_m01_vel_str = "";
+            int pic_02_m01_vel = Convert.ToInt16(tb_pic_02_m01_vel.Text);
+            pic_02_m01_vel_str = pic_02_m01_vel.ToString();
+            if (pic_02_m01_vel < 100 && pic_02_m01_vel > 9)
+            {
+                pic_02_m01_vel_str = "0" + pic_02_m01_vel.ToString();
+            }
+            if (pic_02_m01_vel < 10)
+            {
+                pic_02_m01_vel_str = "00" + pic_02_m01_vel.ToString();
+            }
+
+            string pic_02_m01_pos_str = "";
+            int pic_02_m01_pos = Convert.ToInt16(tb_pic_02_m01_pos.Text);
+            pic_02_m01_pos_str = pic_02_m01_pos.ToString();
+            if (pic_02_m01_pos < 1000 && pic_02_m01_pos > 100)
+            {
+                pic_02_m01_pos_str = "0" + pic_02_m01_pos.ToString();
+            }
+
+            if (pic_02_m01_pos < 100 && pic_02_m01_pos > 9)
+            {
+                pic_02_m01_pos_str = "00" + pic_02_m01_pos.ToString();
+            }
+
+            if (pic_02_m01_pos < 10)
+            {
+                pic_02_m01_pos_str = "000" + pic_02_m01_pos.ToString();
+            }
+
+            //######################### MOTOR 02 #################################
+            string pic_02_m02_vel_str = "";
+            int pic_02_m02_vel = Convert.ToInt16(tb_pic_02_m02_vel.Text);
+            pic_02_m02_vel_str = pic_02_m02_vel.ToString();
+            if (pic_02_m02_vel < 100 && pic_02_m02_vel > 9)
+            {
+                pic_02_m02_vel_str = "0" + pic_02_m02_vel.ToString();
+            }
+            if (pic_02_m02_vel < 10)
+            {
+                pic_02_m02_vel_str = "00" + pic_02_m02_vel.ToString();
+            }
+
+            string pic_02_m02_pos_str = "";
+            int pic_02_m02_pos = Convert.ToInt16(tb_pic_02_m02_pos.Text);
+            pic_02_m02_pos_str = pic_02_m02_pos.ToString();
+            if (pic_02_m02_pos < 1000 && pic_02_m02_pos > 100)
+            {
+                pic_02_m02_pos_str = "0" + pic_02_m02_pos.ToString();
+            }
+
+            if (pic_02_m02_pos < 100 && pic_02_m02_pos > 9)
+            {
+                pic_02_m02_pos_str = "00" + pic_02_m02_pos.ToString();
+            }
+
+            if (pic_02_m02_pos < 10)
+            {
+                pic_02_m02_pos_str = "000" + pic_02_m02_pos.ToString();
+            }
+
+            //###################################### FIM PIC 02 #############################################
+
+
+
+            //###################################### PIC 03 #############################################
+
+            //######################### MOTOR 01 #################################
+            string pic_03_m01_vel_str = "";
+            int pic_03_m01_vel = Convert.ToInt16(tb_pic_03_m01_vel.Text);
+            pic_03_m01_vel_str = pic_03_m01_vel.ToString();
+            if (pic_03_m01_vel < 100 && pic_03_m01_vel > 9)
+            {
+                pic_03_m01_vel_str = "0" + pic_03_m01_vel.ToString();
+            }
+            if (pic_03_m01_vel < 10)
+            {
+                pic_03_m01_vel_str = "00" + pic_03_m01_vel.ToString();
+            }
+
+            string pic_03_m01_pos_str = "";
+            int pic_03_m01_pos = Convert.ToInt16(tb_pic_03_m01_pos.Text);
+            pic_03_m01_pos_str = pic_03_m01_pos.ToString();
+            if (pic_03_m01_pos < 1000 && pic_03_m01_pos > 100)
+            {
+                pic_03_m01_pos_str = "0" + pic_03_m01_pos.ToString();
+            }
+
+            if (pic_03_m01_pos < 100 && pic_03_m01_pos > 9)
+            {
+                pic_03_m01_pos_str = "00" + pic_03_m01_pos.ToString();
+            }
+
+            if (pic_03_m01_pos < 10)
+            {
+                pic_03_m01_pos_str = "000" + pic_03_m01_pos.ToString();
+            }
+
+            //######################### MOTOR 02 #################################
+            string pic_03_m02_vel_str = "";
+            int pic_03_m02_vel = Convert.ToInt16(tb_pic_03_m02_vel.Text);
+            pic_03_m02_vel_str = pic_03_m02_vel.ToString();
+            if (pic_03_m02_vel < 100 && pic_03_m02_vel > 9)
+            {
+                pic_03_m02_vel_str = "0" + pic_03_m02_vel.ToString();
+            }
+            if (pic_03_m02_vel < 10)
+            {
+                pic_03_m02_vel_str = "00" + pic_03_m02_vel.ToString();
+            }
+
+            string pic_03_m02_pos_str = "";
+            int pic_03_m02_pos = Convert.ToInt16(tb_pic_03_m02_pos.Text);
+            pic_03_m02_pos_str = pic_03_m02_pos.ToString();
+            if (pic_03_m02_pos < 1000 && pic_03_m02_pos > 100)
+            {
+                pic_03_m02_pos_str = "0" + pic_03_m02_pos.ToString();
+            }
+
+            if (pic_03_m02_pos < 100 && pic_03_m02_pos > 9)
+            {
+                pic_03_m02_pos_str = "00" + pic_03_m02_pos.ToString();
+            }
+
+            if (pic_03_m02_pos < 10)
+            {
+                pic_03_m02_pos_str = "000" + pic_03_m02_pos.ToString();
+            }
+
+            //###################################### FIM PIC 02 #############################################
+
+
+
+            //###################################### PROTOCOLO DE ENVIO #############################################
+
+
+            PROTOCOLO = ">" + tb_pic_01_m01_inv.Text + pic_01_m01_vel_str + pic_01_m01_pos_str +
+                              tb_pic_01_m02_inv.Text + pic_01_m02_vel_str + pic_01_m02_pos_str +
+
+                              tb_pic_02_m01_inv.Text + pic_02_m01_vel_str + pic_02_m01_pos_str +
+                              tb_pic_02_m02_inv.Text + pic_02_m02_vel_str + pic_02_m02_pos_str + 
+
+                              tb_pic_03_m01_inv.Text + pic_03_m01_vel_str + pic_03_m01_pos_str +
+                              tb_pic_03_m02_inv.Text + pic_03_m02_vel_str + pic_03_m02_pos_str + "*";
+
+
+            rtb_envia_dados.Text = PROTOCOLO;
+
+            porta.WriteLine(PROTOCOLO);
+
+            //###################################### FIM PROTOCOLO DE ENVIO #########################################
+
+        }
+
+        
+        //##################################################################################################################
+        //                                   LOGICA DE CÁLCULO DE ANGULOS
+        //##################################################################################################################
+        private void TB_M01_ANGULO_TextChanged(object sender, EventArgs e)
+        {
+            if (TB_M01_ANGULO.Text != "")
+            {
+                double dado = (3.1416 * 190 * 12 * Convert.ToInt16(TB_M01_ANGULO.Text)) / (1.5 * 360);
+                tb_pic_01_m01_pos.Text = Math.Round(dado).ToString();
+            }
+            else {
+                tb_pic_01_m01_pos.Text = "";
+            }
+
+        }
+
+        private void TB_M02_ANGULO_TextChanged(object sender, EventArgs e)
+        {
+            if (TB_M02_ANGULO.Text != "")
+            {
+                double dado = (3.1416 * 190 * 12 * Convert.ToInt16(TB_M02_ANGULO.Text)) / (1.5 * 360);
+                tb_pic_01_m02_pos.Text = Math.Round(dado).ToString();
+            }
+            else
+            {
+                tb_pic_01_m02_pos.Text = "";
+            }
+        }
+
+        private void TB_M03_ANGULO_TextChanged(object sender, EventArgs e)
+        {
+            if (TB_M03_ANGULO.Text != "")
+            {
+                double dado = (3.1416 * 80 * 12 * Convert.ToInt16(TB_M03_ANGULO.Text)) / (1.5 * 360);
+                tb_pic_02_m01_pos.Text = Math.Round(dado).ToString();
+            }
+            else
+            {
+                tb_pic_02_m01_pos.Text = "";
+            }
+        }
+
+        private void TB_M04_ANGULO_TextChanged(object sender, EventArgs e)
+        {
+            if (TB_M04_ANGULO.Text != "")
+            {
+                double dado = (3.1416 * 130 * 12 * Convert.ToInt16(TB_M04_ANGULO.Text)) / (1.5 * 360);
+                tb_pic_02_m02_pos.Text = Math.Round(dado).ToString();
+            }
+            else
+            {
+                tb_pic_02_m02_pos.Text = "";
+            }
+        }
+
+        private void TB_M05_ANGULO_TextChanged(object sender, EventArgs e)
+        {
+            if (TB_M05_ANGULO.Text != "")
+            {
+                double dado = (3.1416 * 80 * 12 * Convert.ToInt16(TB_M05_ANGULO.Text)) / (1.5 * 360);
+                tb_pic_03_m01_pos.Text = Math.Round(dado).ToString();
+            }
+            else
+            {
+                tb_pic_03_m01_pos.Text = "";
+            }
+        }
+
+        //##################################################################################################################
+        //                                   LOGICA DE CONTROLE MANUAL DOS MOTORES
+        //##################################################################################################################
+        private void button13_MouseUp(object sender, MouseEventArgs e)
+        {
+            tb_pic_03_m02_inv.Text = "7";
+
+            //######################### MOTOR 02 #################################
+            string pic_03_m02_vel_str = "";
+            int pic_03_m02_vel = Convert.ToInt16(tb_pic_03_m02_vel.Text);
+            pic_03_m02_vel_str = pic_03_m02_vel.ToString();
+            if (pic_03_m02_vel < 100 && pic_03_m02_vel > 9)
+            {
+                pic_03_m02_vel_str = "0" + pic_03_m02_vel.ToString();
+            }
+            if (pic_03_m02_vel < 10)
+            {
+                pic_03_m02_vel_str = "00" + pic_03_m02_vel.ToString();
+            }
+
+            string pic_03_m02_pos_str = "";
+            int pic_03_m02_pos = Convert.ToInt16(tb_pic_03_m02_pos.Text);
+            pic_03_m02_pos_str = pic_03_m02_pos.ToString();
+            if (pic_03_m02_pos < 1000 && pic_03_m02_pos > 100)
+            {
+                pic_03_m02_pos_str = "0" + pic_03_m02_pos.ToString();
+            }
+
+            if (pic_03_m02_pos < 100 && pic_03_m02_pos > 9)
+            {
+                pic_03_m02_pos_str = "00" + pic_03_m02_pos.ToString();
+            }
+
+            if (pic_03_m02_pos < 10)
+            {
+                pic_03_m02_pos_str = "000" + pic_03_m02_pos.ToString();
+            }
+
+
+            PROTOCOLO = ">7120000071200000712000007120000071200000" + tb_pic_03_m02_inv.Text + pic_03_m02_vel_str + pic_03_m02_pos_str + "*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+
+
+        }
+
+        private void button13_MouseDown(object sender, MouseEventArgs e)
+        {
+            tb_pic_03_m02_inv.Text = "1";
+
+            //######################### MOTOR 02 #################################
+            string pic_03_m02_vel_str = "";
+            int pic_03_m02_vel = Convert.ToInt16(tb_pic_03_m02_vel.Text);
+            pic_03_m02_vel_str = pic_03_m02_vel.ToString();
+            if (pic_03_m02_vel < 100 && pic_03_m02_vel > 9)
+            {
+                pic_03_m02_vel_str = "0" + pic_03_m02_vel.ToString();
+            }
+            if (pic_03_m02_vel < 10)
+            {
+                pic_03_m02_vel_str = "00" + pic_03_m02_vel.ToString();
+            }
+
+            string pic_03_m02_pos_str = "";
+            int pic_03_m02_pos = Convert.ToInt16(tb_pic_03_m02_pos.Text);
+            pic_03_m02_pos_str = pic_03_m02_pos.ToString();
+            if (pic_03_m02_pos < 1000 && pic_03_m02_pos > 100)
+            {
+                pic_03_m02_pos_str = "0" + pic_03_m02_pos.ToString();
+            }
+
+            if (pic_03_m02_pos < 100 && pic_03_m02_pos > 9)
+            {
+                pic_03_m02_pos_str = "00" + pic_03_m02_pos.ToString();
+            }
+
+            if (pic_03_m02_pos < 10)
+            {
+                pic_03_m02_pos_str = "000" + pic_03_m02_pos.ToString();
+            }
+
+
+            PROTOCOLO = ">7120000071200000712000007120000071200000" + tb_pic_03_m02_inv.Text + pic_03_m02_vel_str + pic_03_m02_pos_str + "*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+
+        }
+
+        private void button12_MouseDown(object sender, MouseEventArgs e)
+        {
+            tb_pic_03_m02_inv.Text = "0";
+
+            //######################### MOTOR 02 #################################
+            string pic_03_m02_vel_str = "";
+            int pic_03_m02_vel = Convert.ToInt16(tb_pic_03_m02_vel.Text);
+            pic_03_m02_vel_str = pic_03_m02_vel.ToString();
+            if (pic_03_m02_vel < 100 && pic_03_m02_vel > 9)
+            {
+                pic_03_m02_vel_str = "0" + pic_03_m02_vel.ToString();
+            }
+            if (pic_03_m02_vel < 10)
+            {
+                pic_03_m02_vel_str = "00" + pic_03_m02_vel.ToString();
+            }
+
+            string pic_03_m02_pos_str = "";
+            int pic_03_m02_pos = Convert.ToInt16(tb_pic_03_m02_pos.Text);
+            pic_03_m02_pos_str = pic_03_m02_pos.ToString();
+            if (pic_03_m02_pos < 1000 && pic_03_m02_pos > 100)
+            {
+                pic_03_m02_pos_str = "0" + pic_03_m02_pos.ToString();
+            }
+
+            if (pic_03_m02_pos < 100 && pic_03_m02_pos > 9)
+            {
+                pic_03_m02_pos_str = "00" + pic_03_m02_pos.ToString();
+            }
+
+            if (pic_03_m02_pos < 10)
+            {
+                pic_03_m02_pos_str = "000" + pic_03_m02_pos.ToString();
+            }
+
+
+            PROTOCOLO = ">7120000071200000712000007120000071200000" + tb_pic_03_m02_inv.Text + pic_03_m02_vel_str + pic_03_m02_pos_str + "*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+
+        }
+
+        private void button12_MouseUp(object sender, MouseEventArgs e)
+        {
+            tb_pic_03_m02_inv.Text = "7";
+
+            //######################### MOTOR 02 #################################
+            string pic_03_m02_vel_str = "";
+            int pic_03_m02_vel = Convert.ToInt16(tb_pic_03_m02_vel.Text);
+            pic_03_m02_vel_str = pic_03_m02_vel.ToString();
+            if (pic_03_m02_vel < 100 && pic_03_m02_vel > 9)
+            {
+                pic_03_m02_vel_str = "0" + pic_03_m02_vel.ToString();
+            }
+            if (pic_03_m02_vel < 10)
+            {
+                pic_03_m02_vel_str = "00" + pic_03_m02_vel.ToString();
+            }
+
+            string pic_03_m02_pos_str = "";
+            int pic_03_m02_pos = Convert.ToInt16(tb_pic_03_m02_pos.Text);
+            pic_03_m02_pos_str = pic_03_m02_pos.ToString();
+            if (pic_03_m02_pos < 1000 && pic_03_m02_pos > 100)
+            {
+                pic_03_m02_pos_str = "0" + pic_03_m02_pos.ToString();
+            }
+
+            if (pic_03_m02_pos < 100 && pic_03_m02_pos > 9)
+            {
+                pic_03_m02_pos_str = "00" + pic_03_m02_pos.ToString();
+            }
+
+            if (pic_03_m02_pos < 10)
+            {
+                pic_03_m02_pos_str = "000" + pic_03_m02_pos.ToString();
+            }
+
+
+            PROTOCOLO = ">7120000071200000712000007120000071200000" + tb_pic_03_m02_inv.Text + pic_03_m02_vel_str + pic_03_m02_pos_str + "*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+
+        }
+
+        private void button15_MouseDown(object sender, MouseEventArgs e)
+        {
+            tb_pic_03_m01_inv.Text = "0";
+
+            //######################### MOTOR 01 #################################
+            string pic_03_m01_vel_str = "";
+            int pic_03_m01_vel = Convert.ToInt16(tb_pic_03_m01_vel.Text);
+            pic_03_m01_vel_str = pic_03_m01_vel.ToString();
+            if (pic_03_m01_vel < 100 && pic_03_m01_vel > 9)
+            {
+                pic_03_m01_vel_str = "0" + pic_03_m01_vel.ToString();
+            }
+            if (pic_03_m01_vel < 10)
+            {
+                pic_03_m01_vel_str = "00" + pic_03_m01_vel.ToString();
+            }
+
+            string pic_03_m01_pos_str = "";
+            int pic_03_m01_pos = Convert.ToInt16(tb_pic_03_m01_pos.Text);
+            pic_03_m01_pos_str = pic_03_m01_pos.ToString();
+            if (pic_03_m01_pos < 1000 && pic_03_m01_pos > 100)
+            {
+                pic_03_m01_pos_str = "0" + pic_03_m01_pos.ToString();
+            }
+
+            if (pic_03_m01_pos < 100 && pic_03_m01_pos > 9)
+            {
+                pic_03_m01_pos_str = "00" + pic_03_m01_pos.ToString();
+            }
+
+            if (pic_03_m01_pos < 10)
+            {
+                pic_03_m01_pos_str = "000" + pic_03_m01_pos.ToString();
+            }
+
+            PROTOCOLO = ">71200000712000007120000071200000" + tb_pic_03_m01_inv.Text + pic_03_m01_vel_str + pic_03_m01_pos_str + "71200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+        }
+
+        private void button15_MouseUp(object sender, MouseEventArgs e)
+        {
+            tb_pic_03_m01_inv.Text = "7";
+
+            //######################### MOTOR 01 #################################
+            string pic_03_m01_vel_str = "";
+            int pic_03_m01_vel = Convert.ToInt16(tb_pic_03_m01_vel.Text);
+            pic_03_m01_vel_str = pic_03_m01_vel.ToString();
+            if (pic_03_m01_vel < 100 && pic_03_m01_vel > 9)
+            {
+                pic_03_m01_vel_str = "0" + pic_03_m01_vel.ToString();
+            }
+            if (pic_03_m01_vel < 10)
+            {
+                pic_03_m01_vel_str = "00" + pic_03_m01_vel.ToString();
+            }
+
+            string pic_03_m01_pos_str = "";
+            int pic_03_m01_pos = Convert.ToInt16(tb_pic_03_m01_pos.Text);
+            pic_03_m01_pos_str = pic_03_m01_pos.ToString();
+            if (pic_03_m01_pos < 1000 && pic_03_m01_pos > 100)
+            {
+                pic_03_m01_pos_str = "0" + pic_03_m01_pos.ToString();
+            }
+
+            if (pic_03_m01_pos < 100 && pic_03_m01_pos > 9)
+            {
+                pic_03_m01_pos_str = "00" + pic_03_m01_pos.ToString();
+            }
+
+            if (pic_03_m01_pos < 10)
+            {
+                pic_03_m01_pos_str = "000" + pic_03_m01_pos.ToString();
+            }
+
+            PROTOCOLO = ">71200000712000007120000071200000" + tb_pic_03_m01_inv.Text + pic_03_m01_vel_str + pic_03_m01_pos_str + "71200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+        }
+
+        private void button14_MouseDown(object sender, MouseEventArgs e)
+        {
+            tb_pic_03_m01_inv.Text = "1";
+
+            //######################### MOTOR 01 #################################
+            string pic_03_m01_vel_str = "";
+            int pic_03_m01_vel = Convert.ToInt16(tb_pic_03_m01_vel.Text);
+            pic_03_m01_vel_str = pic_03_m01_vel.ToString();
+            if (pic_03_m01_vel < 100 && pic_03_m01_vel > 9)
+            {
+                pic_03_m01_vel_str = "0" + pic_03_m01_vel.ToString();
+            }
+            if (pic_03_m01_vel < 10)
+            {
+                pic_03_m01_vel_str = "00" + pic_03_m01_vel.ToString();
+            }
+
+            string pic_03_m01_pos_str = "";
+            int pic_03_m01_pos = Convert.ToInt16(tb_pic_03_m01_pos.Text);
+            pic_03_m01_pos_str = pic_03_m01_pos.ToString();
+            if (pic_03_m01_pos < 1000 && pic_03_m01_pos > 100)
+            {
+                pic_03_m01_pos_str = "0" + pic_03_m01_pos.ToString();
+            }
+
+            if (pic_03_m01_pos < 100 && pic_03_m01_pos > 9)
+            {
+                pic_03_m01_pos_str = "00" + pic_03_m01_pos.ToString();
+            }
+
+            if (pic_03_m01_pos < 10)
+            {
+                pic_03_m01_pos_str = "000" + pic_03_m01_pos.ToString();
+            }
+
+            PROTOCOLO = ">71200000712000007120000071200000" + tb_pic_03_m01_inv.Text + pic_03_m01_vel_str + pic_03_m01_pos_str + "71200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+        }
+
+        private void button14_MouseUp(object sender, MouseEventArgs e)
+        {
+            tb_pic_03_m01_inv.Text = "7";
+
+            //######################### MOTOR 01 #################################
+            string pic_03_m01_vel_str = "";
+            int pic_03_m01_vel = Convert.ToInt16(tb_pic_03_m01_vel.Text);
+            pic_03_m01_vel_str = pic_03_m01_vel.ToString();
+            if (pic_03_m01_vel < 100 && pic_03_m01_vel > 9)
+            {
+                pic_03_m01_vel_str = "0" + pic_03_m01_vel.ToString();
+            }
+            if (pic_03_m01_vel < 10)
+            {
+                pic_03_m01_vel_str = "00" + pic_03_m01_vel.ToString();
+            }
+
+            string pic_03_m01_pos_str = "";
+            int pic_03_m01_pos = Convert.ToInt16(tb_pic_03_m01_pos.Text);
+            pic_03_m01_pos_str = pic_03_m01_pos.ToString();
+            if (pic_03_m01_pos < 1000 && pic_03_m01_pos > 100)
+            {
+                pic_03_m01_pos_str = "0" + pic_03_m01_pos.ToString();
+            }
+
+            if (pic_03_m01_pos < 100 && pic_03_m01_pos > 9)
+            {
+                pic_03_m01_pos_str = "00" + pic_03_m01_pos.ToString();
+            }
+
+            if (pic_03_m01_pos < 10)
+            {
+                pic_03_m01_pos_str = "000" + pic_03_m01_pos.ToString();
+            }
+
+            PROTOCOLO = ">71200000712000007120000071200000" + tb_pic_03_m01_inv.Text + pic_03_m01_vel_str + pic_03_m01_pos_str + "71200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+        }
+
+
+        //#######################################
+
+        private void button9_MouseDown(object sender, MouseEventArgs e)
+        {
+            tb_pic_02_m02_inv.Text = "0";
+
+            //######################### MOTOR 02 #################################
+            string pic_02_m02_vel_str = "";
+            int pic_02_m02_vel = Convert.ToInt16(tb_pic_02_m02_vel.Text);
+            pic_02_m02_vel_str = pic_02_m02_vel.ToString();
+            if (pic_02_m02_vel < 100 && pic_02_m02_vel > 9)
+            {
+                pic_02_m02_vel_str = "0" + pic_02_m02_vel.ToString();
+            }
+            if (pic_02_m02_vel < 10)
+            {
+                pic_02_m02_vel_str = "00" + pic_02_m02_vel.ToString();
+            }
+
+            string pic_02_m02_pos_str = "";
+            int pic_02_m02_pos = Convert.ToInt16(tb_pic_02_m02_pos.Text);
+            pic_02_m02_pos_str = pic_02_m02_pos.ToString();
+            if (pic_02_m02_pos < 1000 && pic_02_m02_pos > 100)
+            {
+                pic_02_m02_pos_str = "0" + pic_02_m02_pos.ToString();
+            }
+
+            if (pic_02_m02_pos < 100 && pic_02_m02_pos > 9)
+            {
+                pic_02_m02_pos_str = "00" + pic_02_m02_pos.ToString();
+            }
+
+            if (pic_02_m02_pos < 10)
+            {
+                pic_02_m02_pos_str = "000" + pic_02_m02_pos.ToString();
+            }
+
+
+            PROTOCOLO = ">712000007120000071200000" + tb_pic_02_m02_inv.Text + pic_02_m02_vel_str + pic_02_m02_pos_str + "7120000071200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+
+        }
+
+        private void button9_MouseUp(object sender, MouseEventArgs e)
+        {
+            tb_pic_02_m02_inv.Text = "7";
+
+            //######################### MOTOR 02 #################################
+            string pic_02_m02_vel_str = "";
+            int pic_02_m02_vel = Convert.ToInt16(tb_pic_02_m02_vel.Text);
+            pic_02_m02_vel_str = pic_02_m02_vel.ToString();
+            if (pic_02_m02_vel < 100 && pic_02_m02_vel > 9)
+            {
+                pic_02_m02_vel_str = "0" + pic_02_m02_vel.ToString();
+            }
+            if (pic_02_m02_vel < 10)
+            {
+                pic_02_m02_vel_str = "00" + pic_02_m02_vel.ToString();
+            }
+
+            string pic_02_m02_pos_str = "";
+            int pic_02_m02_pos = Convert.ToInt16(tb_pic_02_m02_pos.Text);
+            pic_02_m02_pos_str = pic_02_m02_pos.ToString();
+            if (pic_02_m02_pos < 1000 && pic_02_m02_pos > 100)
+            {
+                pic_02_m02_pos_str = "0" + pic_02_m02_pos.ToString();
+            }
+
+            if (pic_02_m02_pos < 100 && pic_02_m02_pos > 9)
+            {
+                pic_02_m02_pos_str = "00" + pic_02_m02_pos.ToString();
+            }
+
+            if (pic_02_m02_pos < 10)
+            {
+                pic_02_m02_pos_str = "000" + pic_02_m02_pos.ToString();
+            }
+
+
+            PROTOCOLO = ">712000007120000071200000" + tb_pic_02_m02_inv.Text + pic_02_m02_vel_str + pic_02_m02_pos_str + "7120000071200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+        }
+
+        private void button8_MouseDown(object sender, MouseEventArgs e)
+        {
+            tb_pic_02_m02_inv.Text = "1";
+
+            //######################### MOTOR 02 #################################
+            string pic_02_m02_vel_str = "";
+            int pic_02_m02_vel = Convert.ToInt16(tb_pic_02_m02_vel.Text);
+            pic_02_m02_vel_str = pic_02_m02_vel.ToString();
+            if (pic_02_m02_vel < 100 && pic_02_m02_vel > 9)
+            {
+                pic_02_m02_vel_str = "0" + pic_02_m02_vel.ToString();
+            }
+            if (pic_02_m02_vel < 10)
+            {
+                pic_02_m02_vel_str = "00" + pic_02_m02_vel.ToString();
+            }
+
+            string pic_02_m02_pos_str = "";
+            int pic_02_m02_pos = Convert.ToInt16(tb_pic_02_m02_pos.Text);
+            pic_02_m02_pos_str = pic_02_m02_pos.ToString();
+            if (pic_02_m02_pos < 1000 && pic_02_m02_pos > 100)
+            {
+                pic_02_m02_pos_str = "0" + pic_02_m02_pos.ToString();
+            }
+
+            if (pic_02_m02_pos < 100 && pic_02_m02_pos > 9)
+            {
+                pic_02_m02_pos_str = "00" + pic_02_m02_pos.ToString();
+            }
+
+            if (pic_02_m02_pos < 10)
+            {
+                pic_02_m02_pos_str = "000" + pic_02_m02_pos.ToString();
+            }
+
+
+            PROTOCOLO = ">712000007120000071200000" + tb_pic_02_m02_inv.Text + pic_02_m02_vel_str + pic_02_m02_pos_str + "7120000071200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+        }
+
+        private void button8_MouseUp(object sender, MouseEventArgs e)
+        {
+            tb_pic_02_m02_inv.Text = "7";
+
+            //######################### MOTOR 02 #################################
+            string pic_02_m02_vel_str = "";
+            int pic_02_m02_vel = Convert.ToInt16(tb_pic_02_m02_vel.Text);
+            pic_02_m02_vel_str = pic_02_m02_vel.ToString();
+            if (pic_02_m02_vel < 100 && pic_02_m02_vel > 9)
+            {
+                pic_02_m02_vel_str = "0" + pic_02_m02_vel.ToString();
+            }
+            if (pic_02_m02_vel < 10)
+            {
+                pic_02_m02_vel_str = "00" + pic_02_m02_vel.ToString();
+            }
+
+            string pic_02_m02_pos_str = "";
+            int pic_02_m02_pos = Convert.ToInt16(tb_pic_02_m02_pos.Text);
+            pic_02_m02_pos_str = pic_02_m02_pos.ToString();
+            if (pic_02_m02_pos < 1000 && pic_02_m02_pos > 100)
+            {
+                pic_02_m02_pos_str = "0" + pic_02_m02_pos.ToString();
+            }
+
+            if (pic_02_m02_pos < 100 && pic_02_m02_pos > 9)
+            {
+                pic_02_m02_pos_str = "00" + pic_02_m02_pos.ToString();
+            }
+
+            if (pic_02_m02_pos < 10)
+            {
+                pic_02_m02_pos_str = "000" + pic_02_m02_pos.ToString();
+            }
+
+
+            PROTOCOLO = ">712000007120000071200000" + tb_pic_02_m02_inv.Text + pic_02_m02_vel_str + pic_02_m02_pos_str + "7120000071200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+        }
+
+        private void button4_MouseDown_1(object sender, MouseEventArgs e)
+        {
+            tb_pic_01_m01_inv.Text = "0";
+
+            //######################### MOTOR 01 #################################
+            string pic_01_m01_vel_str = "";
+            int pic_01_m01_vel = Convert.ToInt16(tb_pic_01_m01_vel.Text);
+            pic_01_m01_vel_str = pic_01_m01_vel.ToString();
+            if (pic_01_m01_vel < 100 && pic_01_m01_vel > 9)
+            {
+                pic_01_m01_vel_str = "0" + pic_01_m01_vel.ToString();
+            }
+            if (pic_01_m01_vel < 10)
+            {
+                pic_01_m01_vel_str = "00" + pic_01_m01_vel.ToString();
+            }
+
+            string pic_01_m01_pos_str = "";
+            int pic_01_m01_pos = Convert.ToInt16(tb_pic_01_m01_pos.Text);
+            pic_01_m01_pos_str = pic_01_m01_pos.ToString();
+            if (pic_01_m01_pos < 1000 && pic_01_m01_pos > 100)
+            {
+                pic_01_m01_pos_str = "0" + pic_01_m01_pos.ToString();
+            }
+
+            if (pic_01_m01_pos < 100 && pic_01_m01_pos > 9)
+            {
+                pic_01_m01_pos_str = "00" + pic_01_m01_pos.ToString();
+            }
+
+            if (pic_01_m01_pos < 10)
+            {
+                pic_01_m01_pos_str = "000" + pic_01_m01_pos.ToString();
+            }
+
+            PROTOCOLO = ">" + tb_pic_01_m01_inv.Text + pic_01_m01_vel_str + pic_01_m01_pos_str + "7120000071200000712000007120000071200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+        }
+
+        private void button4_MouseUp_1(object sender, MouseEventArgs e)
+        {
+            tb_pic_01_m01_inv.Text = "7";
+
+            //######################### MOTOR 01 #################################
+            string pic_01_m01_vel_str = "";
+            int pic_01_m01_vel = Convert.ToInt16(tb_pic_01_m01_vel.Text);
+            pic_01_m01_vel_str = pic_01_m01_vel.ToString();
+            if (pic_01_m01_vel < 100 && pic_01_m01_vel > 9)
+            {
+                pic_01_m01_vel_str = "0" + pic_01_m01_vel.ToString();
+            }
+            if (pic_01_m01_vel < 10)
+            {
+                pic_01_m01_vel_str = "00" + pic_01_m01_vel.ToString();
+            }
+
+            string pic_01_m01_pos_str = "";
+            int pic_01_m01_pos = Convert.ToInt16(tb_pic_01_m01_pos.Text);
+            pic_01_m01_pos_str = pic_01_m01_pos.ToString();
+            if (pic_01_m01_pos < 1000 && pic_01_m01_pos > 100)
+            {
+                pic_01_m01_pos_str = "0" + pic_01_m01_pos.ToString();
+            }
+
+            if (pic_01_m01_pos < 100 && pic_01_m01_pos > 9)
+            {
+                pic_01_m01_pos_str = "00" + pic_01_m01_pos.ToString();
+            }
+
+            if (pic_01_m01_pos < 10)
+            {
+                pic_01_m01_pos_str = "000" + pic_01_m01_pos.ToString();
+            }
+
+            PROTOCOLO = ">" + tb_pic_01_m01_inv.Text + pic_01_m01_vel_str + pic_01_m01_pos_str + "7120000071200000712000007120000071200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+        }
+
+        private void button5_MouseDown_1(object sender, MouseEventArgs e)
+        {
+            tb_pic_01_m01_inv.Text = "1";
+
+            //######################### MOTOR 01 #################################
+            string pic_01_m01_vel_str = "";
+            int pic_01_m01_vel = Convert.ToInt16(tb_pic_01_m01_vel.Text);
+            pic_01_m01_vel_str = pic_01_m01_vel.ToString();
+            if (pic_01_m01_vel < 100 && pic_01_m01_vel > 9)
+            {
+                pic_01_m01_vel_str = "0" + pic_01_m01_vel.ToString();
+            }
+            if (pic_01_m01_vel < 10)
+            {
+                pic_01_m01_vel_str = "00" + pic_01_m01_vel.ToString();
+            }
+
+            string pic_01_m01_pos_str = "";
+            int pic_01_m01_pos = Convert.ToInt16(tb_pic_01_m01_pos.Text);
+            pic_01_m01_pos_str = pic_01_m01_pos.ToString();
+            if (pic_01_m01_pos < 1000 && pic_01_m01_pos > 100)
+            {
+                pic_01_m01_pos_str = "0" + pic_01_m01_pos.ToString();
+            }
+
+            if (pic_01_m01_pos < 100 && pic_01_m01_pos > 9)
+            {
+                pic_01_m01_pos_str = "00" + pic_01_m01_pos.ToString();
+            }
+
+            if (pic_01_m01_pos < 10)
+            {
+                pic_01_m01_pos_str = "000" + pic_01_m01_pos.ToString();
+            }
+
+            PROTOCOLO = ">" + tb_pic_01_m01_inv.Text + pic_01_m01_vel_str + pic_01_m01_pos_str + "7120000071200000712000007120000071200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+        }
+
+        private void button5_MouseUp_1(object sender, MouseEventArgs e)
+        {
+            tb_pic_01_m01_inv.Text = "7";
+
+            //######################### MOTOR 01 #################################
+            string pic_01_m01_vel_str = "";
+            int pic_01_m01_vel = Convert.ToInt16(tb_pic_01_m01_vel.Text);
+            pic_01_m01_vel_str = pic_01_m01_vel.ToString();
+            if (pic_01_m01_vel < 100 && pic_01_m01_vel > 9)
+            {
+                pic_01_m01_vel_str = "0" + pic_01_m01_vel.ToString();
+            }
+            if (pic_01_m01_vel < 10)
+            {
+                pic_01_m01_vel_str = "00" + pic_01_m01_vel.ToString();
+            }
+
+            string pic_01_m01_pos_str = "";
+            int pic_01_m01_pos = Convert.ToInt16(tb_pic_01_m01_pos.Text);
+            pic_01_m01_pos_str = pic_01_m01_pos.ToString();
+            if (pic_01_m01_pos < 1000 && pic_01_m01_pos > 100)
+            {
+                pic_01_m01_pos_str = "0" + pic_01_m01_pos.ToString();
+            }
+
+            if (pic_01_m01_pos < 100 && pic_01_m01_pos > 9)
+            {
+                pic_01_m01_pos_str = "00" + pic_01_m01_pos.ToString();
+            }
+
+            if (pic_01_m01_pos < 10)
+            {
+                pic_01_m01_pos_str = "000" + pic_01_m01_pos.ToString();
+            }
+
+            PROTOCOLO = ">" + tb_pic_01_m01_inv.Text + pic_01_m01_vel_str + pic_01_m01_pos_str + "7120000071200000712000007120000071200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+        }
+
+        private void button7_MouseDown(object sender, MouseEventArgs e)
+        {
+            tb_pic_01_m02_inv.Text = "0";
+
+            //######################### MOTOR 02 #################################
+            string pic_01_m02_vel_str = "";
+            int pic_01_m02_vel = Convert.ToInt16(tb_pic_01_m02_vel.Text);
+            pic_01_m02_vel_str = pic_01_m02_vel.ToString();
+            if (pic_01_m02_vel < 100 && pic_01_m02_vel > 9)
+            {
+                pic_01_m02_vel_str = "0" + pic_01_m02_vel.ToString();
+            }
+            if (pic_01_m02_vel < 10)
+            {
+                pic_01_m02_vel_str = "00" + pic_01_m02_vel.ToString();
+            }
+
+            string pic_01_m02_pos_str = "";
+            int pic_01_m02_pos = Convert.ToInt16(tb_pic_01_m02_pos.Text);
+            pic_01_m02_pos_str = pic_01_m02_pos.ToString();
+            if (pic_01_m02_pos < 1000 && pic_01_m02_pos > 100)
+            {
+                pic_01_m02_pos_str = "0" + pic_01_m02_pos.ToString();
+            }
+
+            if (pic_01_m02_pos < 100 && pic_01_m02_pos > 9)
+            {
+                pic_01_m02_pos_str = "00" + pic_01_m02_pos.ToString();
+            }
+
+            if (pic_01_m02_pos < 10)
+            {
+                pic_01_m02_pos_str = "000" + pic_01_m02_pos.ToString();
+            }
+
+            PROTOCOLO = ">71200000" + tb_pic_01_m02_inv.Text + pic_01_m02_vel_str + pic_01_m02_pos_str + "71200000712000007120000071200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+
+        }
+
+        private void button7_MouseUp(object sender, MouseEventArgs e)
+        {
+            tb_pic_01_m02_inv.Text = "7";
+
+            //######################### MOTOR 02 #################################
+            string pic_01_m02_vel_str = "";
+            int pic_01_m02_vel = Convert.ToInt16(tb_pic_01_m02_vel.Text);
+            pic_01_m02_vel_str = pic_01_m02_vel.ToString();
+            if (pic_01_m02_vel < 100 && pic_01_m02_vel > 9)
+            {
+                pic_01_m02_vel_str = "0" + pic_01_m02_vel.ToString();
+            }
+            if (pic_01_m02_vel < 10)
+            {
+                pic_01_m02_vel_str = "00" + pic_01_m02_vel.ToString();
+            }
+
+            string pic_01_m02_pos_str = "";
+            int pic_01_m02_pos = Convert.ToInt16(tb_pic_01_m02_pos.Text);
+            pic_01_m02_pos_str = pic_01_m02_pos.ToString();
+            if (pic_01_m02_pos < 1000 && pic_01_m02_pos > 100)
+            {
+                pic_01_m02_pos_str = "0" + pic_01_m02_pos.ToString();
+            }
+
+            if (pic_01_m02_pos < 100 && pic_01_m02_pos > 9)
+            {
+                pic_01_m02_pos_str = "00" + pic_01_m02_pos.ToString();
+            }
+
+            if (pic_01_m02_pos < 10)
+            {
+                pic_01_m02_pos_str = "000" + pic_01_m02_pos.ToString();
+            }
+
+            PROTOCOLO = ">71200000" + tb_pic_01_m02_inv.Text + pic_01_m02_vel_str + pic_01_m02_pos_str + "71200000712000007120000071200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+        }
+
+        private void button6_MouseDown(object sender, MouseEventArgs e)
+        {
+            tb_pic_01_m02_inv.Text = "1";
+
+            //######################### MOTOR 02 #################################
+            string pic_01_m02_vel_str = "";
+            int pic_01_m02_vel = Convert.ToInt16(tb_pic_01_m02_vel.Text);
+            pic_01_m02_vel_str = pic_01_m02_vel.ToString();
+            if (pic_01_m02_vel < 100 && pic_01_m02_vel > 9)
+            {
+                pic_01_m02_vel_str = "0" + pic_01_m02_vel.ToString();
+            }
+            if (pic_01_m02_vel < 10)
+            {
+                pic_01_m02_vel_str = "00" + pic_01_m02_vel.ToString();
+            }
+
+            string pic_01_m02_pos_str = "";
+            int pic_01_m02_pos = Convert.ToInt16(tb_pic_01_m02_pos.Text);
+            pic_01_m02_pos_str = pic_01_m02_pos.ToString();
+            if (pic_01_m02_pos < 1000 && pic_01_m02_pos > 100)
+            {
+                pic_01_m02_pos_str = "0" + pic_01_m02_pos.ToString();
+            }
+
+            if (pic_01_m02_pos < 100 && pic_01_m02_pos > 9)
+            {
+                pic_01_m02_pos_str = "00" + pic_01_m02_pos.ToString();
+            }
+
+            if (pic_01_m02_pos < 10)
+            {
+                pic_01_m02_pos_str = "000" + pic_01_m02_pos.ToString();
+            }
+
+            PROTOCOLO = ">71200000" + tb_pic_01_m02_inv.Text + pic_01_m02_vel_str + pic_01_m02_pos_str + "71200000712000007120000071200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+        }
+
+        private void button6_MouseUp(object sender, MouseEventArgs e)
+        {
+            tb_pic_01_m02_inv.Text = "7";
+
+            //######################### MOTOR 02 #################################
+            string pic_01_m02_vel_str = "";
+            int pic_01_m02_vel = Convert.ToInt16(tb_pic_01_m02_vel.Text);
+            pic_01_m02_vel_str = pic_01_m02_vel.ToString();
+            if (pic_01_m02_vel < 100 && pic_01_m02_vel > 9)
+            {
+                pic_01_m02_vel_str = "0" + pic_01_m02_vel.ToString();
+            }
+            if (pic_01_m02_vel < 10)
+            {
+                pic_01_m02_vel_str = "00" + pic_01_m02_vel.ToString();
+            }
+
+            string pic_01_m02_pos_str = "";
+            int pic_01_m02_pos = Convert.ToInt16(tb_pic_01_m02_pos.Text);
+            pic_01_m02_pos_str = pic_01_m02_pos.ToString();
+            if (pic_01_m02_pos < 1000 && pic_01_m02_pos > 100)
+            {
+                pic_01_m02_pos_str = "0" + pic_01_m02_pos.ToString();
+            }
+
+            if (pic_01_m02_pos < 100 && pic_01_m02_pos > 9)
+            {
+                pic_01_m02_pos_str = "00" + pic_01_m02_pos.ToString();
+            }
+
+            if (pic_01_m02_pos < 10)
+            {
+                pic_01_m02_pos_str = "000" + pic_01_m02_pos.ToString();
+            }
+
+            PROTOCOLO = ">71200000" + tb_pic_01_m02_inv.Text + pic_01_m02_vel_str + pic_01_m02_pos_str + "71200000712000007120000071200000*";
+            rtb_envia_dados.Text = PROTOCOLO;
+            porta.WriteLine(PROTOCOLO);
+        }
+
+
+        //##############################################################
+
+
+    }
+}
